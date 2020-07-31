@@ -1,0 +1,13 @@
+plugin: gcp_compute
+zones: 
+  - us-east1-b
+projects:
+  - extreme-outpost-279618
+filters: []
+service_account_file: /home/artur/Desktop/Advanced_Ansible/GCP_Service_Account.json
+auth_kind: serviceaccount
+keyed_groups:
+  - key: zone
+groups:
+  db-servers: "'-db-' in name"
+  web-servers: "'-web-' in name"

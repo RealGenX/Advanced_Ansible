@@ -1,0 +1,24 @@
+---
+# tasks file for php-fpm
+
+- yum:
+    name:
+      - php-fpm
+      - php-mysql
+      - php-curl
+
+- service: name=php-fpm state=started enabled=yes
+
+- file: path="{{ item }}" state=directory owner=nginx group=nginx
+  with_items:
+    - /var/www/joomla
+    - /var/lib/php/session
+
+- template:
+    src: php-fpm.conf.j2
+    dest: /etc/php-fpm.d/www.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - "restart php-fpm"

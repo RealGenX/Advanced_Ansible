@@ -1,0 +1,38 @@
+---
+# tasks file for nginx
+- yum: name=nginx
+
+- service: name=nginx state=started enabled=yes
+
+- file: path=/var/www/joomla state=directory owner=nginx group=nginx
+
+- name: Put SELinux in permissive mode, logging actions that would be blocked.
+  selinux:
+    policy: targeted
+    state: permissive
+
+- name: Deploy nginx Templates
+  template: 
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "nginx"
+    group: "nginx"
+    mode: "0644"
+  notify:
+    - "restart nginx"
+  with_items:
+    - { src: "phpinfo.php.j2", dest: "/var/www/joomla/phpinfo.php" }
+    
+
+- name: Deploy nginx Config
+  template: 
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  notify:
+    - "restart nginx"
+  with_items:
+    - { src: "nginx.conf.j2", dest: "/etc/nginx/nginx.conf" }
+    - { src: "joomla.conf.j2", dest: "/etc/nginx/conf.d/joomla.conf" }

@@ -1,0 +1,22 @@
+---
+# tasks file for joomla
+
+- yum: name=unzip
+
+- get_url:
+    url: https://downloads.joomla.org/us/cms/joomla3/3-9-20/Joomla_3-9-20-Stable-Full_Package.zip?format=zip
+    dest: /var/www/joomla.zip
+
+- unarchive:
+    src: /var/www/joomla.zip
+    dest: /var/www/joomla
+    remote_src: yes
+    creates: "/var/www/joomla/index.php"
+
+- file: 
+    path: /var/www/joomla
+    state: directory
+    recurse: true
+    owner: nginx
+    group: nginx
+    

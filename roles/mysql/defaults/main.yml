@@ -1,0 +1,7 @@
+---
+# defaults file for mysql
+
+mysql_root_password: 'SuperSecretRootPassword'
+mysql_phpuser_passwrod: 'SuperSecRetPassPhpUser'
+web_server_name: 'joomla-web-server'
+

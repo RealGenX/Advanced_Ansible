@@ -1,0 +1,63 @@
+---
+# tasks file for mysql
+
+- yum: name="https://dev.mysql.com/get/mysql57-community-release-el7-9.noarch.rpm"
+
+- yum:
+    name: 
+      - mysql-server
+      - python-pip
+      - bind-utils
+- service: name=mysqld state=started enabled=yes
+
+- pip:
+    name:
+    - PyMySQL
+    
+- stat: path="/var/lib/mysql/pass_defined"
+  register: state_file
+
+- block:
+  - shell: "grep 'temporary password' /var/log/mysqld.log|awk -F 'generated for root@localhost: ' '{print $2}'"
+    register: mysql_temp_pass
+
+  - debug: var=mysql_temp_pass.stdout
+
+  - shell: 'mysql -e "SET PASSWORD = PASSWORD(''{{ mysql_root_password }}'');" --connect-expired-password -uroot -p"{{ mysql_temp_pass.stdout }}"'
+
+  - file: path='/var/lib/mysql/pass_defined' state=touch
+  when: not state_file.stat.exists
+
+- mysql_db:
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    name: joomla
+    state: present
+    
+
+- mysql_user:
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    name: phpuser
+    password: '{{ mysql_phpuser_password }}'
+    state: present
+    
+- shell: "host {{ web_server_name}}|awk -F 'has address ' '{print $2} '"
+  register: web_server_ip_out
+
+- set_fact:
+    web_server_ip: "{{web_server_ip_out.stdout}}"
+  when: web_server_ip_out.stdout != ''
+
+- set_fact:
+    web_server_ip: "127.0.0.1"
+  when: web_server_ip_out.stdout == ''
+
+
+- mysql_user:
+    name: 'phpuser'
+    password: "{{ mysql_phpuser_password }}"
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+    host: "{{ web_server_ip }}"
+    priv: 'joomla.*:ALL'
